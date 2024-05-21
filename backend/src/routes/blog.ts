@@ -1,8 +1,9 @@
 import { Hono } from 'hono';
 import { PrismaClient } from '@prisma/client/edge';
 import { withAccelerate } from '@prisma/extension-accelerate';
+import { EnvironmentBindings } from '../types/bindings';
 
-const blog = new Hono();
+const blog = new Hono<EnvironmentBindings>();
 
 blog.post('/', (c) => {
   return c.text('Post blog');
