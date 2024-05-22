@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import { sign } from 'hono/jwt';
 import { EnvironmentBindings } from '../types/bindings';
 import { hashPassword, hexStringToUint8Array } from '../utils/hashPassword';
-import { prismaMiddleware } from './middleware/prismaMiddleware';
+import { prismaMiddleware } from '../middleware/prismaMiddleware';
 
 const user = new Hono<EnvironmentBindings>();
 user.use(prismaMiddleware);
