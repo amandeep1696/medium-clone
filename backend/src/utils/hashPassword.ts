@@ -1,7 +1,7 @@
 export async function hashPassword(
-  password: string
+  password: string,
+  saltBytes?: Uint8Array
 ): Promise<{ salt: string; hash: string }> {
-  const salt = crypto.getRandomValues(new Uint8Array(16)); // Generate a 16-byte salt
   const encoder = new TextEncoder();
   const data = encoder.encode(password);
   const keyMaterial = await crypto.subtle.importKey(
@@ -12,6 +12,8 @@ export async function hashPassword(
     ['deriveBits']
   );
 
+  // Generate a new salt if one is not provided
+  const salt = saltBytes || crypto.getRandomValues(new Uint8Array(16));
   const derivedBits = await crypto.subtle.deriveBits(
     {
       name: 'PBKDF2',
@@ -20,7 +22,7 @@ export async function hashPassword(
       hash: 'SHA-256',
     },
     keyMaterial,
-    256
+    256 // number of bits to derive
   );
 
   const hashBuffer = new Uint8Array(derivedBits);
@@ -32,5 +34,17 @@ export async function hashPassword(
     .map((b) => b.toString(16).padStart(2, '0'))
     .join('');
 
-  return { salt: saltHex, hash: hash };
+  return { salt: saltHex, hash };
+}
+
+export function hexStringToUint8Array(hexString: string) {
+  if (hexString.length % 2 !== 0) {
+    throw new Error('Hex string has an odd length');
+  }
+  const arrayBuffer = new Uint8Array(hexString.length / 2);
+  for (let i = 0; i < hexString.length; i += 2) {
+    const byteValue = parseInt(hexString.substring(i, i + 2), 16);
+    arrayBuffer[i / 2] = byteValue;
+  }
+  return arrayBuffer;
 }
