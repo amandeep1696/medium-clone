@@ -3,7 +3,7 @@ import { decode, sign, verify } from 'hono/jwt';
 import { PrismaClient } from '@prisma/client/edge';
 import { withAccelerate } from '@prisma/extension-accelerate';
 import { EnvironmentBindings } from '../types/bindings';
-import { hashPassword } from '../utils/hashPassword';
+import { hashPassword, hexStringToUint8Array } from '../utils/hashPassword';
 
 const user = new Hono<EnvironmentBindings>();
 
@@ -46,13 +46,52 @@ user.post('/signup', async (c) => {
     });
   } catch (e) {
     c.status(500);
-    console.log(e);
     return c.json({ error: 'Internal server error' });
   }
 });
 
-user.post('/signin', (c) => {
-  return c.text('Sign in');
+user.post('/signin', async (c) => {
+  const prisma = new PrismaClient({
+    datasourceUrl: c.env?.DATABASE_URL,
+  }).$extends(withAccelerate());
+
+  const body = await c.req.json();
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: {
+        email: body.email,
+      },
+    });
+
+    if (!user) {
+      c.status(404);
+      return c.json({
+        error: 'User not found',
+      });
+    }
+
+    const salt = hexStringToUint8Array(user.salt);
+    const { hash } = await hashPassword(body.password, salt);
+
+    if (hash == user.password) {
+      const token = await sign({ id: user.id }, c.env.JWT_SECRET);
+
+      c.status(200);
+      return c.json({
+        jwt: token,
+      });
+    } else {
+      c.status(401);
+      return c.json({
+        error: 'Invalid credentials',
+      });
+    }
+  } catch (e) {
+    console.log(e);
+    c.status(500);
+    return c.json({ error: 'Internal server error' });
+  }
 });
 
 export default user;
