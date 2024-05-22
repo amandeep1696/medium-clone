@@ -1,10 +1,12 @@
 import { Hono } from 'hono';
-import { PrismaClient } from '@prisma/client/edge';
-import { withAccelerate } from '@prisma/extension-accelerate';
-import { EnvironmentBindings } from '../types/bindings';
+import { ContextBindings, ContextVariables } from '../types/context';
 import { jwtMiddleware } from '../middleware/jwtMiddleware';
 
-const blog = new Hono<EnvironmentBindings>();
+const blog = new Hono<{
+  Bindings: ContextBindings;
+  Variables: ContextVariables;
+}>();
+
 blog.use(jwtMiddleware);
 
 blog.post('/', (c) => {

@@ -1,5 +1,6 @@
 import { Next, Context } from 'hono';
 import { verify } from 'hono/jwt';
+import { ContextBindings, ContextVariables } from '../types/context';
 
 export const jwtMiddleware = async (c: Context, next: Next) => {
   const authHeader = c.req.header('authorization');

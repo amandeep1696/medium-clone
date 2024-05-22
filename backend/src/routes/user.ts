@@ -1,10 +1,14 @@
 import { Hono } from 'hono';
 import { sign } from 'hono/jwt';
-import { EnvironmentBindings } from '../types/bindings';
+import { ContextBindings, ContextVariables } from '../types/context';
 import { hashPassword, hexStringToUint8Array } from '../utils/hashPassword';
 import { prismaMiddleware } from '../middleware/prismaMiddleware';
 
-const user = new Hono<EnvironmentBindings>();
+const user = new Hono<{
+  Bindings: ContextBindings;
+  Variables: ContextVariables;
+}>();
+
 user.use(prismaMiddleware);
 
 user.post('/signup', async (c) => {
