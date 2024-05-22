@@ -4,14 +4,14 @@ import { ContextBindings, ContextVariables } from '../types/context';
 import { hashPassword, hexStringToUint8Array } from '../utils/hashPassword';
 import { prismaMiddleware } from '../middleware/prismaMiddleware';
 
-const user = new Hono<{
+const userRouter = new Hono<{
   Bindings: ContextBindings;
   Variables: ContextVariables;
 }>();
 
-user.use(prismaMiddleware);
+userRouter.use(prismaMiddleware);
 
-user.post('/signup', async (c) => {
+userRouter.post('/signup', async (c) => {
   const prisma = c.get('prisma');
   const body = await c.req.json();
 
@@ -34,6 +34,7 @@ user.post('/signup', async (c) => {
     const user = await prisma.user.create({
       data: {
         email: body.email,
+        name: body.name || null,
         password: hash,
         salt: salt,
       },
@@ -51,7 +52,7 @@ user.post('/signup', async (c) => {
   }
 });
 
-user.post('/signin', async (c) => {
+userRouter.post('/signin', async (c) => {
   const prisma = c.get('prisma');
   const body = await c.req.json();
 
@@ -91,4 +92,4 @@ user.post('/signin', async (c) => {
   }
 });
 
-export default user;
+export default userRouter;

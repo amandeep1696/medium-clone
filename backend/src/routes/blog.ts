@@ -2,29 +2,29 @@ import { Hono } from 'hono';
 import { ContextBindings, ContextVariables } from '../types/context';
 import { jwtMiddleware } from '../middleware/jwtMiddleware';
 
-const blog = new Hono<{
+const blogRouter = new Hono<{
   Bindings: ContextBindings;
   Variables: ContextVariables;
 }>();
 
-blog.use(jwtMiddleware);
+blogRouter.use(jwtMiddleware);
 
-blog.post('/', (c) => {
+blogRouter.post('/', (c) => {
   console.log(c.get('userId'));
   return c.text('Post blog');
 });
 
-blog.put('/', (c) => {
+blogRouter.put('/', (c) => {
   return c.text('Put blog');
 });
 
-blog.get('/:id', (c) => {
+blogRouter.get('/:id', (c) => {
   const id = c.req.param('id');
   return c.text(`Get blog ${id}`);
 });
 
-blog.get('/bulk', (c) => {
+blogRouter.get('/bulk', (c) => {
   return c.text('Get blogs');
 });
 
-export default blog;
+export default blogRouter;

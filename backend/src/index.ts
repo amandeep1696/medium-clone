@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
-import user from './routes/user';
-import blog from './routes/blog';
+import userRouter from './routes/user';
+import blogRouter from './routes/blog';
 import { ContextBindings, ContextVariables } from './types/context';
 
 const app = new Hono<{
@@ -8,7 +8,7 @@ const app = new Hono<{
   Variables: ContextVariables;
 }>();
 
-app.route('/api/v1/user', user);
-app.route('/api/v1/blog', blog);
+app.route('/api/v1/user', userRouter);
+app.route('/api/v1/blog', blogRouter);
 
 export default app;
