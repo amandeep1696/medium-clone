@@ -1,17 +1,14 @@
 import { Hono } from 'hono';
-import { decode, sign, verify } from 'hono/jwt';
-import { PrismaClient } from '@prisma/client/edge';
-import { withAccelerate } from '@prisma/extension-accelerate';
+import { sign } from 'hono/jwt';
 import { EnvironmentBindings } from '../types/bindings';
 import { hashPassword, hexStringToUint8Array } from '../utils/hashPassword';
+import { prismaMiddleware } from './middleware/prismaMiddleware';
 
 const user = new Hono<EnvironmentBindings>();
+user.use(prismaMiddleware);
 
 user.post('/signup', async (c) => {
-  const prisma = new PrismaClient({
-    datasourceUrl: c.env?.DATABASE_URL,
-  }).$extends(withAccelerate());
-
+  const prisma = c.get('prisma');
   const body = await c.req.json();
 
   try {
@@ -51,10 +48,7 @@ user.post('/signup', async (c) => {
 });
 
 user.post('/signin', async (c) => {
-  const prisma = new PrismaClient({
-    datasourceUrl: c.env?.DATABASE_URL,
-  }).$extends(withAccelerate());
-
+  const prisma = c.get('prisma');
   const body = await c.req.json();
 
   try {
@@ -88,7 +82,6 @@ user.post('/signin', async (c) => {
       });
     }
   } catch (e) {
-    console.log(e);
     c.status(500);
     return c.json({ error: 'Internal server error' });
   }
