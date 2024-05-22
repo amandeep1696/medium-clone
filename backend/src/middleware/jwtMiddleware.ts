@@ -10,13 +10,18 @@ export const jwtMiddleware = async (c: Context, next: Next) => {
     });
   }
   const token = authHeader.split(' ')[1];
-  const payload = await verify(token, c.env.JWT_SECRET);
-  if (!payload) {
+
+  try {
+    const payload = await verify(token, c.env.JWT_SECRET);
+    if (!payload || !payload.id) {
+      throw new Error('Invalid token payload');
+    }
+    c.set('userId', payload.id);
+    await next();
+  } catch (e) {
     c.status(401);
     return c.json({
       error: 'Unauthorized User',
     });
   }
-  c.set('userId', payload.id);
-  await next();
 };
