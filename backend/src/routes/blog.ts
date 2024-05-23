@@ -72,6 +72,26 @@ blogRouter.put('/', async (c) => {
   }
 });
 
+// todo add pagination
+// todo probably just return the titles
+blogRouter.get('/bulk', async (c) => {
+  const prisma = c.get('prisma');
+
+  try {
+    const posts = await prisma.post.findMany();
+    c.status(200);
+    return c.json({
+      posts,
+    });
+  } catch (e) {
+    console.log(e);
+    c.status(500);
+    return c.json({
+      error: 'Internal server error',
+    });
+  }
+});
+
 blogRouter.get('/:id', async (c) => {
   const prisma = c.get('prisma');
   const id = c.req.param('id');
@@ -86,26 +106,6 @@ blogRouter.get('/:id', async (c) => {
     c.status(200);
     return c.json({
       post,
-    });
-  } catch (e) {
-    console.log(e);
-    c.status(500);
-    return c.json({
-      error: 'Internal server error',
-    });
-  }
-});
-
-// todo add pagination
-// todo probably just return the titles
-blogRouter.get('/bulk', async (c) => {
-  const prisma = c.get('prisma');
-
-  try {
-    const posts = await prisma.post.findMany();
-    c.status(200);
-    return c.json({
-      posts,
     });
   } catch (e) {
     console.log(e);
