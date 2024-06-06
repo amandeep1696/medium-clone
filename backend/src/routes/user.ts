@@ -40,6 +40,7 @@ userRouter.post('/signup', async (c) => {
       },
     });
 
+    // todo probably create token with expiry
     const token = await sign({ id: user.id }, c.env.JWT_SECRET);
 
     c.status(200);
