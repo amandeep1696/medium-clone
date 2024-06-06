@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { ContextBindings, ContextVariables } from '../types/context';
 import { jwtMiddleware } from '../middleware/jwtMiddleware';
 import { prismaMiddleware } from '../middleware/prismaMiddleware';
+import { createBlogInput, updateBlogInput } from '@amansin97/medium-common';
 
 const blogRouter = new Hono<{
   Bindings: ContextBindings;
@@ -20,6 +21,14 @@ blogRouter.use(prismaMiddleware);
 blogRouter.post('/', async (c) => {
   const prisma = c.get('prisma');
   const body = await c.req.json();
+
+  const { success } = createBlogInput.safeParse(body);
+  if (!success) {
+    c.status(400);
+    return c.json({
+      error: 'Inputs not correct',
+    });
+  }
 
   try {
     const newPost = await prisma.post.create({
@@ -47,6 +56,14 @@ blogRouter.post('/', async (c) => {
 blogRouter.put('/', async (c) => {
   const prisma = c.get('prisma');
   const body = await c.req.json();
+
+  const { success } = updateBlogInput.safeParse(body);
+  if (!success) {
+    c.status(400);
+    return c.json({
+      error: 'Inputs not correct',
+    });
+  }
 
   try {
     const updatedPost = await prisma.post.update({
